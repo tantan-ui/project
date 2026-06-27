@@ -1,0 +1,1 @@
+@uv run --project "D:\project\project" python "D:\project\project\ingest.py" %*
