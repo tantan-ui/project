@@ -54,20 +54,20 @@ uv venv
 uv pip install ollama python-docx pinecone
 ```
 
-### Optional: Make `ingest` a Global Windows CLI Command
+#### Making it a Global Command (Windows)
 
-To run the program from any terminal path using a lightweight `ingest <file>` command, set up a Windows batch utility:
+To run the ingestion script from any folder without typing the full project path:
 
-1. Create a permanent scripts folder on your drive (for example, `C:\tools`).
-2. Create a new file named `ingest.bat` inside that folder.
-3. Paste the following line into `ingest.bat`:
+1. Create a folder to store global CLI binaries, for example: `C:\tools`.
+2. In that directory, create a file named `ingest.bat`.
+3. Open `ingest.bat` in Notepad and paste the following contents:
 
-```bat
-@uv run --project "D:\project\project" python "D:\project\project\ingest.py" %*
-```
+   ```cmd
+   uv run --project "YOUR_PROJECT_DIRECTORY" python "YOUR_PROJECT_DIRECTORY ingest.py" %*
+   ```
 
-4. Add your scripts folder to the Windows `Path` environment variable.
-5. Restart PowerShell.
+4. Add your scripts folder (`C:\tools`) to the Windows `Path` environment variable.
+5. Restart PowerShell to apply the updated PATH.
 
 ### Execution Guide & Arguments
 
@@ -174,7 +174,7 @@ If `n8n` still reports a connection timeout, Ollama may need to accept external 
 The workflow expects to interact with the forum backend using an authorized service token.
 
 - Header: `Authorization`
-- Value: `Token MySuperSecretAutomatedModeratorToken12345; userId=1`
+- Value: `Token <API_KEY>; userId= <user_id>`
 
 ### Expected Webhook Payload
 
