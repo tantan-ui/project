@@ -123,6 +123,39 @@ ollama pull llama3.2:1b
 
 - A Pinecone account and API key
 
+### Connecting Ollama to n8n
+
+Depending on how your `n8n` instance is deployed, the Ollama base URL must be configured differently.
+
+#### Scenario A: Local n8n + Local Ollama
+If `n8n` is running natively on your desktop (npm, desktop app, or native install) and Ollama is also running locally:
+
+- Ollama Base URL in `n8n`: `http://localhost:11434`
+
+#### Scenario B: Dockerized n8n + Local Ollama
+If `n8n` runs inside Docker while Ollama runs natively on Windows/macOS, the container cannot use `localhost` to reach the host machine.
+
+- Ollama Base URL in `n8n` (Windows/macOS): `http://host.docker.internal:11434`
+- Ollama Base URL in `n8n` (Linux): `http://172.17.0.1:11434`
+
+#### Scenario C: Both n8n and Ollama in Docker
+If both services run in Docker and share the same network, use the Ollama container service name as the host.
+
+- Ollama Base URL in `n8n`: `http://ollama:11434`
+
+> Tip: If your `n8n` container still throws a connection timeout, force Ollama to accept external requests.
+
+```powershell
+# Windows
+setx OLLAMA_HOST "0.0.0.0"
+# Then restart Ollama
+```
+
+```bash
+# Linux / Docker
+export OLLAMA_HOST=0.0.0.0
+```
+
 ### Import Instructions
 
 1. Open your `n8n` workspace.
