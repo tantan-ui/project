@@ -1,10 +1,10 @@
-
 import argparse
 import os
 import sys
 import ollama
 from docx import Document
 from pinecone import Pinecone
+import logging
 
 # Default configuration fallback
 DEFAULT_PINECONE_API_KEY = "pcsk_PWCyW_9yXZKtkDkHkuVKCquoxCXwkqncYZJL3qiktMQALzGrh56pUYZMu733HNJAoNAa6"
@@ -19,14 +19,14 @@ def extract_text(file_path):
         file_path = os.path.join(script_dir, os.path.basename(file_path))
         
     if not os.path.exists(file_path):
-        print(f"❌ Error: File not found at {file_path}", file=sys.stderr)
+        print(f"Error: File not found at {file_path}", file=sys.stderr)
         sys.exit(1)
         
     try:
         doc = Document(file_path)
         return "\n".join([para.text for para in doc.paragraphs if para.text])
     except Exception as e:
-        print(f"❌ Error reading document: {e}", file=sys.stderr)
+        print(f"Error reading document: {e}", file=sys.stderr)
         sys.exit(1)
 
 def chunk_text(text, chunk_size):
@@ -41,7 +41,7 @@ def get_embeddings(chunks, model_name):
         response = ollama.embed(model=model_name, input=chunks)
         return response["embeddings"]
     except Exception as e:
-        print(f"❌ Ollama Error: {e}", file=sys.stderr)
+        print(f"Ollama Error: {e}", file=sys.stderr)
         print("💡 Make sure Ollama is running and the model is pulled (`ollama pull nomic-embed-text`).", file=sys.stderr)
         sys.exit(1)
 
@@ -83,21 +83,21 @@ def main():
     args = parser.parse_args()
 
     try:
-        print(f"📋 Reading {args.file}...")
+        logging.info(f"Reading {args.file}...")
         raw_text = extract_text(args.file)
         
         if not raw_text.strip():
-            print("❌ Error: Document appears to be empty.", file=sys.stderr)
+            logging.error("Document appears to be empty.")
             sys.exit(1)
 
-        print(f"✂️  Chunking text into blocks of {args.chunk_size} characters...")
+        logging.info(f"Chunking text into blocks of {args.chunk_size} characters...")
         chunks = chunk_text(raw_text, args.chunk_size)
-        print(f"🧩 Created {len(chunks)} chunks.")
+        logging.info(f"Created {len(chunks)} chunks.")
 
-        print(f"🤖 Generating embeddings with Ollama ({args.model})...")
+        logging.info(f"Generating embeddings with Ollama ({args.model})...")
         vectors = get_embeddings(chunks, args.model)
 
-        print(f"⚙️  Initializing Pinecone client...")
+        logging.info(f"Initializing Pinecone client...")
         pc = Pinecone(api_key=args.key)
         index = pc.Index(args.index)
 
@@ -108,13 +108,13 @@ def main():
             for i, vec in enumerate(vectors)
         ]
 
-        print(f"🚀 Upserting {len(vectors_to_upsert)} vectors to Pinecone index '{args.index}'...")
+        logging.info(f"Upserting {len(vectors_to_upsert)} vectors to Pinecone index '{args.index}'...")
         index.upsert(vectors=vectors_to_upsert)
         
-        print("✅ Document upserted successfully using free local embeddings!")
+        logging.info("Document upserted successfully using free local embeddings!")
 
     except Exception as e:
-        print(f"❌ Critical Error: {e}", file=sys.stderr)
+        logging.error(f"Critical Error: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":
